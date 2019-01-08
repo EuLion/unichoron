@@ -31,6 +31,9 @@ public class CharacterControlScript : MonoBehaviour {
     //マウスカーソルの位置取得用
     Transform Cursor;
 
+    //ダメージ有無判定（相対速度の大きさの下限）
+    public float minDamageSpeed;
+
     // Start関数は変数を初期化するための関数
     void Start () {
         if (myPV.isMine)    //自キャラであれば実行
@@ -191,8 +194,16 @@ public class CharacterControlScript : MonoBehaviour {
         }
         else
         {
-            //ダメージを与える
-            LocalVariables.currentHP -= 10;
+            //自キャラと衝突物との相対速度
+            Vector3 relativeVelocity = col.GetComponent<Rigidbody>().velocity - this.GetComponent<Rigidbody>().velocity;
+
+            //ダメージを与える(相対速度が10m/sを超えた場合)
+            // LocalVariables.currentHP -= 10;
+            if (relativeVelocity.magnitude >= minDamageSpeed) {
+                LocalVariables.currentHP -= Mathf.CeilToInt((1.0f + col.GetComponent<BallManageScript>().elasticModulus)
+                    * this.GetComponent<Rigidbody>().mass * col.GetComponent<Rigidbody>().mass / (this.GetComponent<Rigidbody>().mass + col.GetComponent<Rigidbody>().mass)
+                    * relativeVelocity.magnitude);
+            }
  
             //攻撃側プレイヤーのkillcount++処理
             if (LocalVariables.currentHP > 0)
