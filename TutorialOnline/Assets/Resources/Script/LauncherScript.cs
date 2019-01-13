@@ -12,17 +12,22 @@ public class LauncherScript : Photon.PunBehaviour
  
     #region Private変数
     //Private変数の定義はココで
-    string _gameVersion = "Chapter12";   //ゲームのバージョン。仕様が異なるバージョンとなったときはバージョンを変更しないとエラーが発生する。
+    string _gameVersion = "AutoMatching_harada";   //ゲームのバージョン。仕様が異なるバージョンとなったときはバージョンを変更しないとエラーが発生する。
     #endregion
  
     #region Public Methods
+    void Awake () {
+        //前の情報を消したい時だけ使う
+        //PlayerPrefs.DeleteKey(NameInputFieldScript.playerNamePrefKey);
+    }
+
     //ログインボタンを押したときに実行される
-    public void Connect()   
+    public void Connect ()
     {
         if (!PhotonNetwork.connected) {                         //Photonに接続できていなければ
             PhotonNetwork.ConnectUsingSettings(_gameVersion);   //Photonに接続する
             Debug.Log("Photonに接続しました。");
-            SceneManager.LoadScene("Lobby");    //Lobbyシーンに遷移
+            SceneManager.LoadScene("AutoMatchingLobby");    //Lobbyシーンに遷移
         }
     }
     #endregion
