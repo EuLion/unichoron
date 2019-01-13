@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
  
 public class BallManageScript : MonoBehaviour {
     public PhotonPlayer Attacker;   //攻撃生成者のPhotonPlayer
+    public String TeamOfAttacker;	//攻撃生成者のチーム
+
     float Speed = 20f;  //球のスピード
     public float elasticModulus;  //弾性係数
  
