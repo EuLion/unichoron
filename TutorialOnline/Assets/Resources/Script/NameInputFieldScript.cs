@@ -6,7 +6,7 @@ using System.Collections;
 public class NameInputFieldScript : MonoBehaviour
 {
     #region Private変数定義
-    public static string playerNamePrefKey = "PlayerName";
+    static string playerNamePrefKey = "PlayerName";
     #endregion
  
     #region MonoBehaviourコールバック
@@ -24,7 +24,6 @@ public class NameInputFieldScript : MonoBehaviour
                 _inputField.text = defaultName;
             }
         }
-        GameObject.Find("InputNamePanel").SetActive(false);
     }
     #endregion
  

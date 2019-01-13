@@ -43,16 +43,14 @@ namespace Com.MyCompany.MyGame
             for (int i = 0; i < roomInfo.Length; i++)
             {
                 Debug.Log(roomInfo[i].Name + " : " + roomInfo[i].Name + "–" + roomInfo[i].PlayerCount + " / " + roomInfo[i].MaxPlayers /*+ roomInfo[i].CustomProperties["roomCreator"].ToString()*/);
-                
-                if (RoomParent != null) {
-                    //ルーム情報表示用RoomElementを生成
-                    GameObject RoomElement = GameObject.Instantiate(RoomElementPrefab);
                     
-                    //RoomElementをcontentの子オブジェクトとしてセット    
-                    RoomElement.transform.SetParent(RoomParent.transform);
-                    //RoomElementにルーム情報をセット
-                    RoomElement.GetComponent<RoomElementScript>().SetRoomInfo(roomInfo[i].Name, roomInfo[i].PlayerCount, roomInfo[i].MaxPlayers, roomInfo[i].CustomProperties["RoomCreator"].ToString());
-                }
+                //ルーム情報表示用RoomElementを生成
+                GameObject RoomElement = GameObject.Instantiate(RoomElementPrefab);
+                
+                //RoomElementをcontentの子オブジェクトとしてセット    
+                RoomElement.transform.SetParent(RoomParent.transform);
+                //RoomElementにルーム情報をセット
+                RoomElement.GetComponent<RoomElementScript>().SetRoomInfo(roomInfo[i].Name, roomInfo[i].PlayerCount, roomInfo[i].MaxPlayers, roomInfo[i].CustomProperties["RoomCreator"].ToString());
             }
         }
  
@@ -70,10 +68,8 @@ namespace Com.MyCompany.MyGame
  
         //GetRoomListは一定時間ごとに更新され、その更新のタイミングで実行する処理
         public override void OnReceivedRoomListUpdate()
-        {
-            if (RoomParent != null) {
-                DestroyChildObject(RoomParent.transform);   //RoomElementを削除
-            }
+        {            
+            DestroyChildObject(RoomParent.transform);   //RoomElementを削除
             GetRooms();     //RoomElementを再生成
         }
         
@@ -97,12 +93,11 @@ namespace Com.MyCompany.MyGame
             //プレイヤーローカル変数初期化
             LocalVariables.VariableReset();
         }
-
         //ルーム作成時の処理(作成者しか実行されない)
         public override void OnCreatedRoom()
         {
             //battleシーンへ遷移
-            //PhotonNetwork.LoadLevel("battle");
+            PhotonNetwork.LoadLevel("battle");
         }
         #endregion
     }

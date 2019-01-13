@@ -12,9 +12,6 @@ EditorBuildSettings:
     path: Assets/Lancher.unity
     guid: be7cb257b60084406a97cc8804689ac4
   - enabled: 1
-    path: Assets/AutoMatchingLobby.unity
-    guid: aa17620520ecb458d9024e6582e94958
-  - enabled: 0
     path: Assets/Lobby.unity
     guid: 1afe4e37bf9714b58a5e2ec815252dd4
   - enabled: 1
