@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/battle.unity
     guid: 84a12afaf08ae4d8b9bc4e638dd3e6ef
+  - enabled: 1
+    path: Assets/result.unity
+    guid: 42c2f23aaddefee41b82d0d45fe0140a
   m_configObjects: {}
