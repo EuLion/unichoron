@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+//using UnityEngine.SceneManagement;
 
 public class AutoMatchingScript : MonoBehaviour {
 
@@ -10,6 +11,25 @@ public class AutoMatchingScript : MonoBehaviour {
     private int playerNum = 2;
     private string createRoomName = "No_Name";
     private int matchCounter = 100;
+
+    //チーム振り分け
+    public static string playerTeamPrefKey = "PlayerTeam";
+    public static string team1 = "Left";
+    public static string team2 = "Right";
+
+    //チーム振り分け完了判定リスト
+    //private List<int> teamList = new List<int>();    //チーム振り分けが完了したら0を挿入
+    private string teamCount = "TeamCount";
+
+    //オンライン化に必要なコンポーネントを設定
+    public PhotonView myPV;
+
+    void Start () {
+        //プレイヤーがチーム情報を保持している場合は削除する
+        if (PlayerPrefs.HasKey(playerTeamPrefKey)) {
+            PlayerPrefs.DeleteKey(playerTeamPrefKey);
+        }
+    }
 
     // Update is called once per frame
     void Update () {
@@ -27,6 +47,7 @@ public class AutoMatchingScript : MonoBehaviour {
         if (!PhotonNetwork.inRoom) {
             string othersRoomName = GetRooms();
             Debug.Log(othersRoomName);
+
             //部屋が他になかったら
             if (othersRoomName == "") {
                 //作成する部屋の設定
@@ -39,6 +60,7 @@ public class AutoMatchingScript : MonoBehaviour {
                 {
                     { "RoomCreator",PhotonNetwork.playerName }
                 };
+                roomOptions.CustomRoomProperties.Add(teamCount, "0");
                 //ロビーにカスタムプロパティの情報を表示させる
                 roomOptions.CustomRoomPropertiesForLobby = new string[] {
                     "RoomCreator",
@@ -62,9 +84,66 @@ public class AutoMatchingScript : MonoBehaviour {
             if (room == null) {
                 return;
             }
-            if (room.playerCount == room.maxPlayers) {
-                PhotonNetwork.LoadLevel("battle");
+
+            // ルームのカスタムプロパティを取得
+            ExitGames.Client.Photon.Hashtable cp = room.customProperties;
+            int teamCnt = Convert.ToInt32(cp[teamCount]);
+                Debug.Log(teamCnt);
+
+            //チーム振り分け
+            if (!PlayerPrefs.HasKey(playerTeamPrefKey)) {
+                Debug.Log("チーム振り分け開始");
+                if (teamCnt % 2 == 0) {
+                    //チーム振り分け(奇数番目に入室したプレイヤー)
+                    PlayerPrefs.SetString(playerTeamPrefKey, team1);
+                } else if (teamCnt % 2 == 1) {
+                    //チーム振り分け(偶数番目に入室したプレイヤー)
+                    PlayerPrefs.SetString(playerTeamPrefKey, team2);
+                }
+
+                Debug.Log("playerTeamPrefKey: " + PlayerPrefs.GetString(playerTeamPrefKey));
+                
+                cp[teamCount] = Convert.ToString(teamCnt + 1);
+                room.SetCustomProperties (cp);
             }
+
+            /*
+            //チーム振り分け
+            if (!PlayerPrefs.HasKey(playerTeamPrefKey)) {
+                Debug.Log("チーム振り分け開始");
+                if (room.playerCount % 2 == 1) {
+                    //チーム振り分け(奇数番目に入室したプレイヤー)
+                    PlayerPrefs.SetString(playerTeamPrefKey, team1);
+                } else if (room.playerCount % 2 == 0) {
+                    //チーム振り分け(偶数番目に入室したプレイヤー)
+                    PlayerPrefs.SetString(playerTeamPrefKey, team2);
+                }
+
+                //チーム振り分け完了リスト更新
+                myPV.RPC("TeamListAdd", PhotonTargets.AllViaServer);
+                Debug.Log("playerTeamPrefKey: " + PlayerPrefs.GetString(playerTeamPrefKey));
+            }
+            */
+            
+            //ルームが満員でチーム振り分けが完了している場合
+            if (Convert.ToInt32(cp[teamCount]) == room.maxPlayers) {
+                Debug.Log("バトルシーンに遷移します");
+                myPV.RPC("LoadBattleScene", PhotonTargets.AllViaServer);
+            }
+
+            /*
+            //ルームが満員の場合
+            if (room.playerCount == room.maxPlayers) {
+                Debug.Log("ルームが満員になりました");
+                //チーム振り分けが完了している場合：バトルシーンへ遷移
+                if ((room.maxPlayers % 2 == 1 && PlayerPrefs.GetString(playerTeamPrefKey) == team1)
+                    || (room.maxPlayers % 2 == 0 && PlayerPrefs.GetString(playerTeamPrefKey) == team2)) {
+                    //バトルシーン遷移RPC
+                    Debug.Log("バトルシーンに遷移します");
+                    myPV.RPC("LoadBattleScene", PhotonTargets.AllViaServer);
+                }
+            }
+            */
         }
     }
 
@@ -86,6 +165,22 @@ public class AutoMatchingScript : MonoBehaviour {
             }
         }
         return "";
+    }
+
+    /*
+    //チーム振り分け完了リスト同期用RPC
+    [PunRPC]
+    void TeamListAdd()
+    {
+        teamList.Add(0);
+    }
+    */
+
+    //バトルシーン遷移同期用RPC
+    [PunRPC]
+    void LoadBattleScene()
+    {
+        PhotonNetwork.LoadLevel("battle");
     }
 
 }

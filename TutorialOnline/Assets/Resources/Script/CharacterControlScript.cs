@@ -104,6 +104,7 @@ public class CharacterControlScript : MonoBehaviour {
             if (Input.GetButton("Jump"))    
             {
                 moveDirection.y = jumpSpeed;
+                Debug.Log("playerTeamPrefKey: " + PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey));
             }
         }
         else        //空中操作の処理（重力加速度等）
