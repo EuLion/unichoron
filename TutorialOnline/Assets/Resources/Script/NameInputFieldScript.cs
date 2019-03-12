@@ -36,7 +36,7 @@ public class NameInputFieldScript : MonoBehaviour
  
         PlayerPrefs.SetString(playerNamePrefKey, value);    //今回の名前をセーブ
  
-        Debug.Log(PhotonNetwork.player.NickName);   //playerの名前の確認。（動作が確認できればこの行は消してもいい）
+        Debug.Log("name: " + PhotonNetwork.player.NickName);   //playerの名前の確認。（動作が確認できればこの行は消してもいい）
     }   
     #endregion
 }

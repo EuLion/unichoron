@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ball
+  - RespawnLeft
+  - RespawnRight
+  - Cube
   layers:
   - Default
   - TransparentFX
