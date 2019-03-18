@@ -7,7 +7,7 @@ using System;
 public class AutoMatchingScript : MonoBehaviour {
 
     //オートマッチング
-    private int playerNum = 2;//テスト時：１,本番：２
+    private int playerNum = 1;//テスト時：１,本番：２
     private string createRoomName = "No_Name";
     private int matchCounter = 100;
 
