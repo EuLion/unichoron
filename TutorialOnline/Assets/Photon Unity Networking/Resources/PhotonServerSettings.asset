@@ -45,4 +45,8 @@ MonoBehaviour:
   - BallInst
   - Damaged
   - Dead
+  - AddScore
+  - LoadBattleScene
+  - InstantiatePlayer
+  - TeamListAdd
   DisableAutoOpenWizard: 1
