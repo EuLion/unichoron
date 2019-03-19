@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
  
 public class CharacterControlScript : MonoBehaviour {
     //オンライン化に必要なコンポーネントを設定
@@ -30,6 +31,9 @@ public class CharacterControlScript : MonoBehaviour {
 
     //マウスカーソルの位置取得用
     Transform Cursor;
+
+    //ダメージ有無判定（相対速度の大きさの下限）
+    public float minDamageSpeed;
 
     // Start関数は変数を初期化するための関数
     void Start () {
@@ -180,6 +184,7 @@ public class CharacterControlScript : MonoBehaviour {
         //ボールを生成
         GameObject Ball = Instantiate(BallPrefab, instpos, instrot) as GameObject;
         Ball.GetComponent<BallManageScript>().Attacker = info.sender; //ボールに自分のPhotonPlayer情報を乗せる
+        Ball.GetComponent<BallManageScript>().TeamOfAttacker = GetComponent<TeamManageScript>().team; //ボールに自分のチーム情報を乗せる
     }
  
     #region 被弾関連処理
@@ -196,16 +201,39 @@ public class CharacterControlScript : MonoBehaviour {
             return;
         }
         PhotonPlayer colAttacker = col.GetComponent<BallManageScript>().Attacker;
+        String colTeamOfAttacker = col.GetComponent<BallManageScript>().TeamOfAttacker;
  
-        //当たった物がボールではないまたは自分が生成したボールならなにもしない
-        if (!col.CompareTag("Cube")||colAttacker.IsLocal) 
+        // //当たった物がボールではないまたは自分が生成したボールならなにもしない
+        // if (!col.CompareTag("Ball")||colAttacker.IsLocal)
+        //当たった物が自チームが生成したボールならなにもしない
+        if (colTeamOfAttacker == GetComponent<TeamManageScript>().team)
         {
             return;
         }
         else
         {
-            //ダメージを与える
-            LocalVariables.currentHP -= 10;
+            //自キャラと衝突物との相対速度
+            Vector3 relativeVelocity = col.GetComponent<Rigidbody>().velocity - this.GetComponent<Rigidbody>().velocity;
+
+            //ダメージを与える(相対速度が10m/sを超えた場合)
+            // LocalVariables.currentHP -= 10;
+            if (relativeVelocity.magnitude >= minDamageSpeed) {
+                int damage = Mathf.CeilToInt((1.0f + col.GetComponent<BallManageScript>().elasticModulus)
+                    * this.GetComponent<Rigidbody>().mass * col.GetComponent<Rigidbody>().mass / (this.GetComponent<Rigidbody>().mass + col.GetComponent<Rigidbody>().mass)
+                    * relativeVelocity.magnitude);
+
+                LocalVariables.currentHP -= damage;
+
+                if (GetComponent<TeamManageScript>().team == "Right") {
+                    // Rightチームのスコアに加算
+                    FindObjectOfType<ScoreLeftScript>().AddPointLeft(damage);
+
+                } else if (GetComponent<TeamManageScript>().team == "Left") {
+                    // Leftチームのスコアに加算
+                    FindObjectOfType<ScoreRightScript>().AddPointRight(damage);
+                }
+                
+            }
  
             //攻撃側プレイヤーのkillcount++処理
             if (LocalVariables.currentHP > 0)
