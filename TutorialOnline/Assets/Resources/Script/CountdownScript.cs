@@ -32,7 +32,6 @@ public class CountdownScript : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         if (counter++ % interval == 0) {
-            Debug.Log("counter: " + countdownText.text);
             int countdownInt;
             if (int.TryParse(countdownText.text, out countdownInt)) {
                 if (countdownInt > 1) {

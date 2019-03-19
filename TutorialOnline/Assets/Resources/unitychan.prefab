@@ -2222,7 +2222,7 @@ GameObject:
   - component: {fileID: 114891478453392950}
   - component: {fileID: 114470483562320792}
   - component: {fileID: 54244119081798184}
-  - component: {fileID: 114791788659720422}
+  - component: {fileID: 114826089574760332}
   m_Layer: 9
   m_Name: unitychan
   m_TagString: Player
@@ -5113,7 +5113,6 @@ MonoBehaviour:
   - {fileID: 114862877059515678}
   - {fileID: 114891478453392950}
   - {fileID: 114470483562320792}
-  - {fileID: 114791788659720422}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
@@ -5138,8 +5137,7 @@ MonoBehaviour:
   jumpSpeed: 5
   rotateSpeed: 10
   gravity: 20
-  BallPrefab: {fileID: 1023784724130962, guid: b2193fd9aefa34ea583399aae38869fc, type: 2}
-  minDamageSpeed: 10
+  BallPrefab: {fileID: 1686088697110572, guid: ddd9e2a7e199948998f61304f6958e56, type: 2}
 --- !u!114 &114470483562320792
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5155,7 +5153,7 @@ MonoBehaviour:
     type: 2}
   HP: 100
   ChatText: 
---- !u!114 &114791788659720422
+--- !u!114 &114826089574760332
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -5163,7 +5161,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1835442015428374}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63d4a50d1e5b0f0439da6ec7af3b3020, type: 3}
+  m_Script: {fileID: 11500000, guid: d387b4ff38ce04218a220eb0cb2b34e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team: 
