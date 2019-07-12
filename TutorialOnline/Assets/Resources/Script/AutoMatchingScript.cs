@@ -11,11 +11,10 @@ public class AutoMatchingScript : MonoBehaviour {
     private int playerNum = 2;//テスト時：１,本番：２
     private string createRoomName = "No_Name";
     private int matchCounter = 100;
+    private bool isHost = false;
 
     //チーム振り分け
     public static string playerTeamPrefKey = "PlayerTeam";
-    public static string team1 = "Left";
-    public static string team2 = "Right";
 
     //チーム振り分け完了判定リスト
     //private List<int> teamList = new List<int>();    //チーム振り分けが完了したら0を挿入
@@ -38,14 +37,37 @@ public class AutoMatchingScript : MonoBehaviour {
             //Debug.Log("matchCounter: " + matchCounter);
             AutoMatching();
         }
+        if (isHost && PhotonNetwork.inRoom) { //ホストの時
+            if (PhotonNetwork.room.playerCount == playerNum) { //入室可能人数いっぱいになったら
+                //チーム分け
+                chooseUpTeams();
+
+                //ゲームスタート
+                myPV.RPC("LoadBattleScene", PhotonTargets.AllViaServer);
+            }
+        }
     }
+
+    private void chooseUpTeams ()
+    {
+        int teamSideNum = Enum.GetNames(typeof(TeamSide)).Length;
+        int i = 0;
+        foreach ( var player in PhotonNetwork.playerList ) {
+            var properties = new ExitGames.Client.Photon.Hashtable();
+            properties.Add(playerTeamPrefKey, Enum.GetName(typeof(TeamSide), i % teamSideNum));
+            player.SetCustomProperties(properties);
+            Debug.Log("test: " + i.ToString());
+            i++;
+        }
+    }
+
 
     //自動でマッチングを行い、ゲームを開始する
     public void AutoMatching ()
     {
         //部屋に居ない場合
         if (!PhotonNetwork.inRoom) {
-            string othersRoomName = GetRooms();
+            string othersRoomName = GetRoom();
             Debug.Log(othersRoomName);
 
             //部屋が他になかったら
@@ -74,6 +96,8 @@ public class AutoMatchingScript : MonoBehaviour {
                 Debug.Log("createRoomName: " + createRoomName);
                 //部屋作成
                 PhotonNetwork.CreateRoom(createRoomName/* + DateTime.Now*/,roomOptions,null);
+                isHost = true;
+
             } else {
                 //roomnameの部屋に入室
                 PhotonNetwork.JoinRoom(othersRoomName);
@@ -85,6 +109,7 @@ public class AutoMatchingScript : MonoBehaviour {
                 return;
             }
 
+            /*
             // ルームのカスタムプロパティを取得
             ExitGames.Client.Photon.Hashtable cp = room.customProperties;
             int teamCnt = Convert.ToInt32(cp[teamCount]);
@@ -105,7 +130,7 @@ public class AutoMatchingScript : MonoBehaviour {
                 
                 cp[teamCount] = Convert.ToString(teamCnt + 1);
                 room.SetCustomProperties (cp);
-            }
+            }*/
 
             /*
             //チーム振り分け
@@ -125,11 +150,13 @@ public class AutoMatchingScript : MonoBehaviour {
             }
             */
             
+            /*
             //ルームが満員でチーム振り分けが完了している場合
             if (Convert.ToInt32(cp[teamCount]) == room.maxPlayers) {
                 Debug.Log("バトルシーンに遷移します");
                 myPV.RPC("LoadBattleScene", PhotonTargets.AllViaServer);
             }
+            */
 
             /*
             //ルームが満員の場合
@@ -147,7 +174,7 @@ public class AutoMatchingScript : MonoBehaviour {
         }
     }
 
-    public string GetRooms()
+    public string GetRoom()
     {
         //roomInfoに現在存在するルーム情報を格納・更新
         RoomInfo[] roomInfo = PhotonNetwork.GetRoomList();
@@ -178,9 +205,20 @@ public class AutoMatchingScript : MonoBehaviour {
 
     //バトルシーン遷移同期用RPC
     [PunRPC]
-    void LoadBattleScene()
+    private void LoadBattleScene()
     {
         PhotonNetwork.LoadLevel("battle");
     }
 
+    public void OnPhotonPlayerPropertiesChanged( object[] playerAndUpdatedProps )
+    {
+        var player      = playerAndUpdatedProps[ 0 ] as PhotonPlayer;
+        var properties  = playerAndUpdatedProps[ 1 ] as ExitGames.Client.Photon.Hashtable;
+
+        if (player.ID == PhotonNetwork.player.ID) { //自分なら
+            object myTeamSide = null;
+            properties.TryGetValue(playerTeamPrefKey, out myTeamSide);
+            PlayerPrefs.SetString(playerTeamPrefKey, myTeamSide.ToString());
+        }
+    }
 }

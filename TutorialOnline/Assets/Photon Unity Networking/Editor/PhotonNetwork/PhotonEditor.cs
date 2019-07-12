@@ -110,7 +110,7 @@ public class PhotonEditor : EditorWindow
 
     protected static string UrlAccountPage = "https://dashboard.photonengine.com/Account/SignIn?email="; // opened in browser
 
-    protected static string UrlCloudDashboard = "https://dashboard.photonengine.com/dashboard?email=";
+    protected static string UrlCloudDashboard = "https://dashboard.photonengine.com?email=";
 
 
     private enum PhotonSetupStates
@@ -155,7 +155,7 @@ public class PhotonEditor : EditorWindow
 		EditorApplication.playmodeStateChanged += PlaymodeStateChanged;
 		#endif
 
-        #if UNITY_2018
+		#if (UNITY_2018 || UNITY_2018_1_OR_NEWER)
 		EditorApplication.projectChanged += EditorUpdate;
         EditorApplication.hierarchyChanged += EditorUpdate;
         #else
@@ -409,8 +409,8 @@ public class PhotonEditor : EditorWindow
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(new GUIContent(CurrentLang.OpenCloudDashboardText, CurrentLang.OpenCloudDashboardTooltip), GUILayout.Width(205)))
             {
-				Application.OpenURL(UrlCloudDashboard + Uri.EscapeUriString(this.mailOrAppId));
-                this.mailOrAppId = "";
+                Application.OpenURL(string.Concat(UrlCloudDashboard, Uri.EscapeUriString(this.mailOrAppId)));
+                this.mailOrAppId = string.Empty;
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -570,16 +570,19 @@ public class PhotonEditor : EditorWindow
         }
 
 
-        AccountService client = new AccountService();
-        client.RegisterByEmail(email, RegisterOrigin, accountServiceType); // this is the synchronous variant using the static RegisterOrigin. "result" is in the client
+            AccountService client = new AccountService();
+            client.RegisterByEmail(email, RegisterOrigin, accountServiceType, RegisterWithEmailCallback); // this is the synchronous variant using the static RegisterOrigin. "result" is in the client
+        }
 
-        EditorUtility.ClearProgressBar();
-        if (client.ReturnCode == 0)
+        private void RegisterWithEmailCallback(AccountService client)
         {
-            this.mailOrAppId = client.AppId;
-            PhotonNetwork.PhotonServerSettings.UseCloud(this.mailOrAppId, 0);
-            if (PhotonEditorUtils.HasVoice)
+            EditorUtility.ClearProgressBar();
+            if (client.ReturnCode == 0)
             {
+                this.mailOrAppId = client.AppId;
+                PhotonNetwork.PhotonServerSettings.UseCloud(this.mailOrAppId, 0);
+                if (PhotonEditorUtils.HasVoice)
+                {
                 PhotonNetwork.PhotonServerSettings.VoiceAppID = client.AppId2;
             }
             PhotonEditor.SaveSettings();

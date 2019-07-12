@@ -5,12 +5,19 @@ using System;
 
 public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
 
-	// チーム
-	public String team;
+    // チーム
+    public String team = "";
+    public const float TIMEOUT = 30f;
 
-	void Start () {
-		if (photonView.isMine) {
-			team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
+    void Start () {
+        if (photonView.isMine) {
+            team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
+            Debug.Log("my team: " + team);
+
+            //自分のチームを送信する
+            photonView.RPC("setTeam", PhotonTargets.Others, team);
+
+            /*
 			//3.0秒後に実行する
     		StartCoroutine(DelayMethod(3.0f, () =>
     		{
@@ -26,10 +33,46 @@ public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
     		{
         		team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
     		}));
-		}
-	}
+            */
+        } else { //not photonView.isMine
+            if (team == "") {
+                //他のプレイヤーに聞く
+                askTeam();
+            }
+        }
+        Invoke("canStart", TIMEOUT);
+    }
 
-	#region OnPhotonSerializeView同期
+    [PunRPC]
+    private void setTeam (String team) {
+        if (this.team == "") {
+            Debug.Log("set team: " + team);
+            this.team = team;
+        }
+    }
+
+    private void askTeam () {
+        Debug.Log("ask team");
+        photonView.RPC("sendTeam", PhotonTargets.Others);
+    }
+
+    [PunRPC]
+    private void sendTeam () {
+        Debug.Log("send team");
+        photonView.RPC("setTeam", PhotonTargets.Others, team);
+    }
+
+    private void canStart() {
+        if (!isReady()) {
+            Debug.Log("エラー：タイムアウトしました。");
+            //TODO:エラー　ロビーに戻す
+        }
+    }
+    public bool isReady () {
+        return team != ""; 
+    }
+
+    #region OnPhotonSerializeView同期
     //プレイヤーのチームを同期
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
     {
