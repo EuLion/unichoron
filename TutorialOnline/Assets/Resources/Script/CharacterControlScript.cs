@@ -35,6 +35,10 @@ public class CharacterControlScript : MonoBehaviour {
     //ダメージ有無判定（相対速度の大きさの下限）
     public float minDamageSpeed;
 
+    private ScoreScript[] teamSideScore;
+
+    private Team myTeam;
+
     // Start関数は変数を初期化するための関数
     void Start () {
         if (myPV.isMine)    //自キャラであれば実行
@@ -46,7 +50,13 @@ public class CharacterControlScript : MonoBehaviour {
 
             //マウスカーソルのTransformを設定
             Cursor = GameObject.Find("MouseCursor").transform;
+            myTeam = GetComponent<TeamManageScript>().team;
+            Debug.Log("myTeam: " + myTeam.getTeamSide());
         }
+        teamSideScore = new ScoreScript[(int)Enum.GetNames(typeof(TeamSide)).Length];
+        teamSideScore[0] = GameObject.Find("ScoreNone").GetComponent("ScoreScript") as ScoreScript;
+        teamSideScore[1] = GameObject.Find("ScoreLeft").GetComponent("ScoreScript") as ScoreScript;
+        teamSideScore[2] = GameObject.Find("ScoreRight").GetComponent("ScoreScript") as ScoreScript;
     }
   
   // Update関数は1フレームに１回実行される
@@ -201,12 +211,12 @@ public class CharacterControlScript : MonoBehaviour {
             return;
         }
         PhotonPlayer colAttacker = col.GetComponent<BallManageScript>().Attacker;
-        String colTeamOfAttacker = col.GetComponent<BallManageScript>().TeamOfAttacker;
+        Team colTeamOfAttacker = col.GetComponent<BallManageScript>().TeamOfAttacker;
  
         // //当たった物がボールではないまたは自分が生成したボールならなにもしない
         // if (!col.CompareTag("Ball")||colAttacker.IsLocal)
         //当たった物が自チームが生成したボールならなにもしない
-        if (colTeamOfAttacker == GetComponent<TeamManageScript>().team)
+        if (colTeamOfAttacker.equal(myTeam))
         {
             return;
         }
@@ -224,15 +234,18 @@ public class CharacterControlScript : MonoBehaviour {
 
                 LocalVariables.currentHP -= damage;
 
-                if (GetComponent<TeamManageScript>().team == "Right") {
-                    // Rightチームのスコアに加算
-                    FindObjectOfType<ScoreLeftScript>().AddPointLeft(damage);
-
-                } else if (GetComponent<TeamManageScript>().team == "Left") {
-                    // Leftチームのスコアに加算
-                    FindObjectOfType<ScoreRightScript>().AddPointRight(damage);
+                foreach (TeamSide tmpTeam in Enum.GetValues(typeof(TeamSide))) {
+                    if (tmpTeam == TeamSide.None)
+                    {
+                        continue;
+                    }
+                    if (myTeam.equal(tmpTeam)) {
+                        Debug.Log(myTeam.getTeamSide() + " AddPoint: " + damage);
+                        // Rightチームのスコアに加算
+                        teamSideScore[(int)tmpTeam].AddPoint(damage);
+                        break;
+                    }
                 }
-                
             }
  
             //攻撃側プレイヤーのkillcount++処理

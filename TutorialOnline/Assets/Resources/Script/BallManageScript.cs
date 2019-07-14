@@ -4,7 +4,7 @@ using UnityEngine;
  
 public class BallManageScript : MonoBehaviour {
     public PhotonPlayer Attacker;   //攻撃生成者のPhotonPlayer
-    public string TeamOfAttacker;   //攻撃生成者のチーム
+    public Team TeamOfAttacker;   //攻撃生成者のチーム
 
     float Speed = 20f;  //球のスピード
     public float elasticModulus;  //弾性係数

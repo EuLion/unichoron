@@ -3,39 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
+public class TeamManageScript : Photon.PunBehaviour {
 
     // チーム
-    public String team = "";
+    public Team team;
     public const float TIMEOUT = 30f;
 
-    void Start () {
+    void Awake () { //CharacterControlScriptのStart使用するteamを先に初期化するためAwake
+        team = new Team();
         if (photonView.isMine) {
-            team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
-            Debug.Log("my team: " + team);
+            team.setTeamSide(PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey));
+            Debug.Log("my team: " + team.getTeamSide());
 
             //自分のチームを送信する
-            photonView.RPC("setTeam", PhotonTargets.Others, team);
-
-            /*
-			//3.0秒後に実行する
-    		StartCoroutine(DelayMethod(3.0f, () =>
-    		{
-        		team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
-    		}));
-    		//2.0秒後に実行する
-    		StartCoroutine(DelayMethod(2.0f, () =>
-    		{
-        		team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
-    		}));
-    		//5.0秒後に実行する
-    		StartCoroutine(DelayMethod(5.0f, () =>
-    		{
-        		team = PlayerPrefs.GetString(AutoMatchingScript.playerTeamPrefKey);
-    		}));
-            */
+            photonView.RPC("setTeam", PhotonTargets.Others, team.getStrTeam());
         } else { //not photonView.isMine
-            if (team == "") {
+            if (team.equal(TeamSide.None)) {
                 //他のプレイヤーに聞く
                 askTeam();
             }
@@ -44,10 +27,10 @@ public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
     }
 
     [PunRPC]
-    private void setTeam (String team) {
-        if (this.team == "") {
-            Debug.Log("set team: " + team);
-            this.team = team;
+    private void setTeam (String strTeam) {
+        if (this.team.equal(TeamSide.None)) {
+            Debug.Log("set team: " + strTeam);
+            Debug.Log("could set: " + this.team.setTeamSide(strTeam));
         }
     }
 
@@ -59,7 +42,7 @@ public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
     [PunRPC]
     private void sendTeam () {
         Debug.Log("send team");
-        photonView.RPC("setTeam", PhotonTargets.Others, team);
+        photonView.RPC("setTeam", PhotonTargets.Others, team.getStrTeam());
     }
 
     private void canStart() {
@@ -69,33 +52,6 @@ public class TeamManageScript : Photon.PunBehaviour, IPunObservable {
         }
     }
     public bool isReady () {
-        return team != ""; 
+        return !team.equal(TeamSide.None); 
     }
-
-    #region OnPhotonSerializeView同期
-    //プレイヤーのチームを同期
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) 
-    {
-        if (stream.isWriting)
-        {
-            stream.SendNext(this.team);
-        }
-        else
-        {
-            this.team = (string)stream.ReceiveNext();
-        }
-    }
-    #endregion
-
-    /// <summary>
-	/// 渡された処理を指定時間後に実行する
-	/// </summary>
-	/// <param name="waitTime">遅延時間[ミリ秒]</param>
-	/// <param name="action">実行したい処理</param>
-	/// <returns></returns>
-	private IEnumerator DelayMethod(float waitTime, Action action)
-	{
-    	yield return new WaitForSeconds(waitTime);
-    	action();
-	}
 }
