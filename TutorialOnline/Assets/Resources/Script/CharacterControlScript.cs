@@ -299,7 +299,7 @@ public class CharacterControlScript : MonoBehaviour {
         AttackLock = false; //攻撃ロック解除
         MoveLock = false;   //移動ロック解除
         LocalVariables.currentHP = 100; //HP回復
-        GameObject respawnPoint = GameObject.FindWithTag("RespawnLeft");
+        GameObject respawnPoint = myTeam.getRespawnPoint();
         this.transform.position = respawnPoint.transform.position;//リスポーン位置に移動
         this.transform.rotation = respawnPoint.transform.rotation;//リスポーン方向リセット
         yield return new WaitForSeconds(5f);    //死亡後無敵時間
